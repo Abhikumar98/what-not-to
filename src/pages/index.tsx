@@ -1,73 +1,78 @@
 import * as React from 'react';
 
 import Layout from '@/components/layout/Layout';
-import ArrowLink from '@/components/links/ArrowLink';
-import ButtonLink from '@/components/links/ButtonLink';
-import UnderlineLink from '@/components/links/UnderlineLink';
-import UnstyledLink from '@/components/links/UnstyledLink';
 import Seo from '@/components/Seo';
 
-/**
- * SVGR Support
- * Caveat: No React Props Type.
- *
- * You can override the next-env if the type is important to you
- * @see https://stackoverflow.com/questions/68103844/how-to-override-next-js-svg-module-declaration
- */
-import Vercel from '~/svg/Vercel.svg';
-
-// !STARTERCONF -> Select !STARTERCONF and CMD + SHIFT + F
-// Before you begin editing, follow all comments with `STARTERCONF`,
-// to customize the default configuration.
-
 export default function HomePage() {
+  const [prompt, setPrompt] = React.useState<string>('');
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [response, setResponse] = React.useState<string>('');
+
+  const handlePromptGeneration = async (e: any) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+
+      const body = {
+        prompt,
+      };
+      const responseJSON = await fetch('/api/', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+
+      const res = await responseJSON.json();
+      const [answer] = res;
+
+      setResponse(answer.text);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Layout>
       {/* <Seo templateTitle='Home' /> */}
       <Seo />
 
-      <main>
-        <section className='bg-white'>
-          <div className='layout flex min-h-screen flex-col items-center justify-center text-center'>
-            <Vercel className='text-5xl' />
-            <h1 className='mt-4'>
-              Next.js + Tailwind CSS + TypeScript Starter
-            </h1>
-            <p className='mt-2 text-sm text-gray-800'>
-              A starter for Next.js, Tailwind CSS, and TypeScript with Absolute
-              Import, Seo, Link component, pre-configured with Husky{' '}
-            </p>
-            <p className='mt-2 text-sm text-gray-700'>
-              <ArrowLink href='https://github.com/theodorusclarence/ts-nextjs-tailwind-starter'>
-                See the repository
-              </ArrowLink>
-            </p>
-
-            <ButtonLink className='mt-6' href='/components' variant='light'>
-              See all components
-            </ButtonLink>
-
-            <UnstyledLink
-              href='https://vercel.com/new/git/external?repository-url=https%3A%2F%2Fgithub.com%2Ftheodorusclarence%2Fts-nextjs-tailwind-starter'
-              className='mt-4'
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                width='92'
-                height='32'
-                src='https://vercel.com/button'
-                alt='Deploy with Vercel'
-              />
-            </UnstyledLink>
-
-            <footer className='absolute bottom-2 text-gray-700'>
-              © {new Date().getFullYear()} By{' '}
-              <UnderlineLink href='https://theodorusclarence.com?ref=tsnextstarter'>
-                Theodorus Clarence
-              </UnderlineLink>
-            </footer>
+      <main className='flex h-screen items-center'>
+        <div className='flex h-full w-1/2 items-center bg-[#ffe6e6]'>
+          <img src='/images/singham.jpeg' />
+        </div>
+        <div className='w-1/2 p-20'>
+          <div className=' text-4xl font-extrabold'>
+            What not to do when police catches you while...
           </div>
-        </section>
+          <div>Disclamer: Please don't do this XD</div>
+          <div>
+            <form onSubmit={handlePromptGeneration}>
+              <input
+                className='my-8 w-full rounded-md border-2 border-black p-2'
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+              />
+              <div>
+                {loading ? (
+                  <div>Generating...</div>
+                ) : (
+                  <div className='flex w-full justify-center'>
+                    <button
+                      className=' flex h-full items-center justify-center rounded-md bg-black px-3 py-1.5 text-white'
+                      type='submit'
+                    >
+                      <div>Generate Prompt</div>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </form>
+          </div>
+          <div>
+            <pre className=' whitespace-pre-wrap font-primary'>{response}</pre>
+          </div>
+        </div>
       </main>
     </Layout>
   );
